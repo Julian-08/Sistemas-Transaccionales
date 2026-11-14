@@ -1,0 +1,56 @@
+<div class="zb-acceso">
+  <app-acceso-marca titulo="Bienvenido de nuevo" texto="Ingresa con tu correo para continuar con tu gestión en Zimbra." />
+
+  <div class="zb-acceso__formulario">
+    <div class="zb-acceso__tarjeta">
+      <a routerLink="/" class="zb-acceso__volver"><i class="feather icon-arrow-left"></i> Volver al inicio</a>
+      <h3>Iniciar sesión</h3>
+      <p class="text-muted mb-4">Usa el correo con el que te registraste.</p>
+
+      @if (aviso) {
+        <div class="alert alert-warning py-2" role="status">{{ aviso }}</div>
+      }
+      @if (mensajeError) {
+        <div class="alert alert-danger py-2" role="alert">{{ mensajeError }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="ingresar()" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="email">Correo electrónico</label>
+          <input id="email" type="email" class="form-control" formControlName="email" autocomplete="username"
+            placeholder="nombre@empresa.com" [class.is-invalid]="f['email'].touched && f['email'].invalid" />
+          <div class="invalid-feedback">Ingresa un correo válido.</div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label" for="contrasena">Contraseña</label>
+          <div class="input-group">
+            <input id="contrasena" [type]="verContrasena ? 'text' : 'password'" class="form-control" formControlName="contrasena"
+              autocomplete="current-password" [class.is-invalid]="f['contrasena'].touched && f['contrasena'].invalid" />
+            <button type="button" class="btn btn-outline-secondary" (click)="verContrasena = !verContrasena"
+              [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <i class="feather" [ngClass]="verContrasena ? 'icon-eye-off' : 'icon-eye'"></i>
+            </button>
+            <div class="invalid-feedback">La contraseña es obligatoria.</div>
+          </div>
+        </div>
+
+        <div class="text-end mb-4">
+          <a routerLink="/recuperar-contrasena" class="small">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="btn btn-zimbra w-100" [disabled]="cargando">
+          @if (cargando) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Ingresando...
+          } @else {
+            Ingresar
+          }
+        </button>
+      </form>
+
+      <p class="text-center text-muted mt-4 mb-0">
+        ¿Aún no tienes cuenta? <a routerLink="/registro">Crea una gratis</a>
+      </p>
+    </div>
+  </div>
+</div>

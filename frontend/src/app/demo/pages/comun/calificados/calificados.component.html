@@ -1,0 +1,120 @@
+<div class="zb-encabezado">
+  <div>
+    <h4>Listos para el plan de pago</h4>
+    <p>
+      @if (esAdministrador) {
+        Clientes con {{ ingresosMinimos }} ingresos o más en los últimos {{ dias }} días. Asigna los que no tienen asesor.
+      } @else {
+        Tus clientes que más usan Zimbra. Es el momento de ofrecerles la licencia.
+      }
+    </p>
+  </div>
+  @if (esAdministrador) {
+    <div class="form-check form-switch">
+      <input id="soloSinAsesor" class="form-check-input" type="checkbox" [(ngModel)]="sinAsignar" (change)="listar()" />
+      <label class="form-check-label" for="soloSinAsesor">Solo sin asesor</label>
+    </div>
+  }
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h5 class="mb-0">{{ lista.filtrados.length }} clientes</h5>
+    <input type="search" class="form-control form-control-sm" style="max-width: 260px" placeholder="Buscar cliente o empresa"
+      [ngModel]="lista.terminoBusqueda" (ngModelChange)="lista.buscar($event)" aria-label="Buscar clientes calificados" />
+  </div>
+  <div class="card-body">
+    @if (cargando) {
+      <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover zb-tabla mb-0">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th class="text-center">Ingresos</th>
+              <th>Último ingreso</th>
+              <th class="text-center">Puntaje</th>
+              <th>Prueba</th>
+              <th>Estado</th>
+              @if (esAdministrador) {
+                <th style="min-width: 240px">Asesor</th>
+              } @else {
+                <th class="text-end">Acciones</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (cliente of lista.paginados; track cliente.idCliente) {
+              <tr>
+                <td>
+                  <a href="javascript:" (click)="verFicha(cliente)">{{ cliente.nombre }}</a>
+                  <div class="small text-muted">{{ cliente.empresa }} · {{ cliente.email }}</div>
+                </td>
+                <td class="text-center"><strong>{{ cliente.ingresosPeriodo }}</strong></td>
+                <td class="text-nowrap">{{ cliente.ultimoIngreso | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td class="text-center">{{ cliente.puntaje }}</td>
+                <td>
+                  @if (cliente.pruebaVigente) {
+                    <span class="zb-estado zb-estado--NUEVO">Vence en {{ diasPrueba(cliente) }} días</span>
+                  } @else if (cliente.fechaVencimientoPrueba) {
+                    <span class="zb-estado zb-estado--EN_REVISION">Vencida</span>
+                  } @else {
+                    <span class="text-muted small">Sin prueba</span>
+                  }
+                </td>
+                <td>
+                  @if (cliente.tieneLicencia) {
+                    <span class="zb-estado zb-estado--ACEPTADA">Con licencia</span>
+                  } @else if (cliente.esProspecto) {
+                    <span class="zb-estado zb-estado--{{ cliente.estadoProspecto }}">{{ cliente.estadoProspecto }}</span>
+                  } @else {
+                    <span class="text-muted small">Cliente</span>
+                  }
+                </td>
+                @if (esAdministrador) {
+                  <td>
+                    <div class="input-group input-group-sm">
+                      <select class="form-select" [(ngModel)]="seleccion[cliente.idCliente]" [attr.aria-label]="'Asesor para ' + cliente.nombre"
+                        [disabled]="!cliente.esProspecto">
+                        <option [ngValue]="null" disabled>{{ cliente.esProspecto ? 'Sin asesor' : 'Aún no es prospecto' }}</option>
+                        @for (asesor of asesores; track asesor.idAsesor) {
+                          <option [ngValue]="asesor.idAsesor">{{ asesor.nombre }}</option>
+                        }
+                      </select>
+                      <button type="button" class="btn btn-zimbra"
+                        [disabled]="!seleccion[cliente.idCliente] || seleccion[cliente.idCliente] === cliente.idAsesor" (click)="asignar(cliente)">
+                        {{ cliente.idAsesor ? 'Reasignar' : 'Asignar' }}
+                      </button>
+                    </div>
+                  </td>
+                } @else {
+                  <td class="text-end text-nowrap">
+                    <button type="button" class="btn btn-sm btn-light" (click)="verFicha(cliente)">Ver ficha</button>
+                    @if (!cliente.tieneLicencia && cliente.esProspecto) {
+                      <button type="button" class="btn btn-sm btn-zimbra" (click)="ofrecerPlan(cliente)">
+                        <i class="feather icon-navigation me-1"></i>Ofrecer plan
+                      </button>
+                    }
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="zb-vacio">
+                  <i class="feather icon-star"></i>
+                  Todavía no hay clientes con suficientes ingresos.
+                  @if (esAdministrador) {
+                    Puedes ajustar la regla en Configuración.
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginacion [pagina]="lista.paginaActual" [totalPaginas]="lista.totalPaginas" [totalRegistros]="lista.filtrados.length"
+        (cambiar)="lista.cambiarPagina($event)" />
+    }
+  </div>
+</div>

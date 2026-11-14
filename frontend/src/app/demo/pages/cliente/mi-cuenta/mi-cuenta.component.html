@@ -1,0 +1,92 @@
+@if (cargando) {
+  <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+} @else if (perfil) {
+  <div class="zb-encabezado">
+    <div>
+      <h4>Hola, {{ perfil.nombre }}</h4>
+      <p>Bienvenido a Zimbra para {{ perfil.empresa }}.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-7 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h5>Tu prueba de Zimbra</h5></div>
+        <div class="card-body">
+          @if (prueba) {
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="zb-estado zb-estado--ACTIVO">Prueba activa</span>
+              <span class="text-muted">Vence el {{ prueba.fechaVencimiento | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Día {{ prueba.diasPrueba - prueba.diasRestantes }} de {{ prueba.diasPrueba }}</span>
+              <strong>Te quedan {{ prueba.diasRestantes }} días</strong>
+            </div>
+            <div class="zb-barra" style="height: 14px"><span [style.width.%]="porcentajeUsado"></span></div>
+            <p class="mt-4 mb-3">
+              Tienes acceso completo al correo, calendarios, contactos y documentos. Configura Zimbra para tu equipo con la guía paso a paso.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+              <a routerLink="/inicio/cliente/mi-empresa" class="btn btn-zimbra"><i class="feather icon-briefcase me-1"></i> Configurar mi empresa</a>
+              <a routerLink="/inicio/cliente/planes" class="btn btn-outline-secondary">Ver planes</a>
+            </div>
+          } @else {
+            <div class="text-center py-3">
+              <i class="feather icon-download-cloud text-primary" style="font-size: 42px"></i>
+              @if (pruebaVencida) {
+                <h5 class="mt-3">Tu prueba terminó</h5>
+                <p class="text-muted">Para seguir usando Zimbra elige el plan que mejor se adapta a tu empresa.</p>
+                <a routerLink="/inicio/cliente/planes" class="btn btn-zimbra">Ver planes y licencias</a>
+              } @else {
+                <h5 class="mt-3">Activa tu prueba gratuita</h5>
+                <p class="text-muted">Usa Zimbra completo durante 60 días, sin costo y sin compromiso.</p>
+                <button type="button" class="btn btn-zimbra btn-lg" [disabled]="descargando" (click)="descargarPrueba()">
+                  {{ descargando ? 'Activando...' : 'Descargar prueba gratis' }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h5>Mis datos</h5></div>
+        <div class="card-body">
+          <dl class="mb-0">
+            <dt class="small text-muted">Nombre</dt>
+            <dd>{{ perfil.nombre }}</dd>
+            <dt class="small text-muted">Empresa</dt>
+            <dd>{{ perfil.empresa }}</dd>
+            <dt class="small text-muted">Correo</dt>
+            <dd>{{ perfil.email }}</dd>
+            <dt class="small text-muted">Cliente desde</dt>
+            <dd class="mb-0">{{ perfil.fechaRegistro | date: 'dd/MM/yyyy' }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (pruebas.length) {
+    <div class="card">
+      <div class="card-header"><h5>Historial de pruebas</h5></div>
+      <div class="card-body p-0">
+        <table class="table zb-tabla mb-0">
+          <thead><tr><th>Inicio</th><th>Vencimiento</th><th>Días</th><th>Estado</th></tr></thead>
+          <tbody>
+            @for (p of pruebas; track p.idPrueba) {
+              <tr>
+                <td>{{ p.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ p.fechaVencimiento | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ p.diasPrueba }}</td>
+                <td><span class="zb-estado" [ngClass]="p.vigente ? 'zb-estado--ACTIVO' : 'zb-estado--INACTIVO'">{{ p.vigente ? 'Vigente' : 'Vencida' }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,63 @@
+.zimbra-campana {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 18px;
+}
+
+.zimbra-campana__contador {
+  position: absolute;
+  top: -6px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff5252;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.zimbra-usuario {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zimbra-usuario__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0b5cad;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.zimbra-usuario__avatar--claro {
+  background: #fff;
+  color: #0b5cad;
+  margin-right: 10px;
+}
+
+.zimbra-usuario__texto {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.2;
+
+  strong {
+    font-size: 13px;
+  }
+
+  small {
+    font-size: 11px;
+    opacity: 0.75;
+  }
+}

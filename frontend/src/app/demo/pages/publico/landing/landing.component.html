@@ -1,0 +1,137 @@
+<header class="lp-cabecera">
+  <div class="lp-contenedor lp-cabecera__fila">
+    <a routerLink="/" class="lp-logo">
+      <img src="assets/images/logo-zimbra.svg" alt="" />
+      <span>Zimbra</span>
+    </a>
+    <nav class="lp-menu" aria-label="Secciones">
+      <a routerLink="/" fragment="producto">Producto</a>
+      <a routerLink="/" fragment="como-funciona">Cómo funciona</a>
+      <a routerLink="/" fragment="planes">Planes</a>
+    </nav>
+    <div class="lp-acciones">
+      @if (haySesion) {
+        <a [routerLink]="rutaInicio" class="btn btn-zimbra">Ir a mi cuenta</a>
+      } @else {
+        <a routerLink="/login" class="btn btn-outline-secondary">Iniciar sesión</a>
+        <a routerLink="/registro" class="btn btn-zimbra">Crear cuenta</a>
+      }
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="lp-hero">
+    <div class="lp-contenedor lp-hero__fila">
+      <div class="lp-hero__texto">
+        <span class="lp-etiqueta">Suite de colaboración de código abierto</span>
+        <h1>Correo, calendario y trabajo en equipo para toda tu empresa</h1>
+        <p>
+          Zimbra Collaboration Suite reúne el correo empresarial, los calendarios compartidos, los contactos y los documentos
+          en una sola plataforma que funciona en cualquier navegador.
+        </p>
+        <div class="lp-hero__botones">
+          <a routerLink="/registro" class="btn btn-lg btn-zimbra">Prueba gratis por 60 días</a>
+          <a routerLink="/login" class="btn btn-lg btn-light">Ya tengo cuenta</a>
+        </div>
+        <ul class="lp-hero__datos">
+          <li><strong>60 días</strong> de prueba sin costo</li>
+          <li><strong>Sin instalar</strong> complementos</li>
+          <li><strong>Asesor</strong> que te acompaña</li>
+        </ul>
+      </div>
+
+      <div class="lp-hero__vista" aria-hidden="true">
+        <div class="lp-ventana">
+          <div class="lp-ventana__barra"><span></span><span></span><span></span></div>
+          <div class="lp-ventana__cuerpo">
+            <aside>
+              <b>Bandeja</b>
+              <i>Enviados</i>
+              <i>Calendario</i>
+              <i>Contactos</i>
+              <i>Documentos</i>
+            </aside>
+            <div class="lp-ventana__lista">
+              <div class="lp-correo lp-correo--nuevo"><b>Equipo comercial</b><span>Reunión de ventas — 10:00 a. m.</span></div>
+              <div class="lp-correo"><b>Gerencia</b><span>Presupuesto del trimestre aprobado</span></div>
+              <div class="lp-correo"><b>Soporte</b><span>Nuevos buzones creados para el equipo</span></div>
+              <div class="lp-correo"><b>Calendario</b><span>Revisión de proyecto — mañana</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="producto" class="lp-seccion">
+    <div class="lp-contenedor">
+      <h2>Todo lo que tu empresa necesita para comunicarse</h2>
+      <p class="lp-seccion__intro">Una plataforma sencilla de usar y de mantener, sin contratar un ejército de administradores.</p>
+      <div class="lp-caracteristicas">
+        @for (caracteristica of caracteristicas; track caracteristica.titulo) {
+          <article>
+            <i class="feather" [ngClass]="caracteristica.icono"></i>
+            <h3>{{ caracteristica.titulo }}</h3>
+            <p>{{ caracteristica.texto }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="lp-seccion lp-seccion--gris">
+    <div class="lp-contenedor">
+      <h2>Cómo empezar</h2>
+      <p class="lp-seccion__intro">Pruebas Zimbra sin riesgo y cuando estés listo eliges el plan que más te conviene.</p>
+      <ol class="lp-pasos">
+        @for (paso of pasos; track paso.titulo; let i = $index) {
+          <li>
+            <span>{{ i + 1 }}</span>
+            <h3>{{ paso.titulo }}</h3>
+            <p>{{ paso.texto }}</p>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section id="planes" class="lp-seccion">
+    <div class="lp-contenedor">
+      <h2>Planes flexibles para cualquier tamaño de equipo</h2>
+      <p class="lp-seccion__intro">Paga solo por lo que usas o habilita a todo tu equipo sin límite de usuarios.</p>
+      <div class="lp-planes">
+        @for (plan of planes; track plan.nombre) {
+          <article class="lp-plan" [class.lp-plan--destacado]="plan.destacado">
+            @if (plan.destacado) {
+              <span class="lp-plan__sello">Más elegido</span>
+            }
+            <h3>{{ plan.nombre }}</h3>
+            <p>{{ plan.descripcion }}</p>
+            <ul>
+              @for (beneficio of plan.beneficios; track beneficio) {
+                <li><i class="feather icon-check"></i> {{ beneficio }}</li>
+              }
+            </ul>
+            <a routerLink="/registro" class="btn w-100" [ngClass]="plan.destacado ? 'btn-zimbra' : 'btn-outline-primary'">
+              Empezar con la prueba gratis
+            </a>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-cierre">
+    <div class="lp-contenedor lp-cierre__fila">
+      <div>
+        <h2>¿Listo para mejorar la comunicación de tu empresa?</h2>
+        <p>Crea tu cuenta, descarga la prueba y un asesor te ayudará a elegir el plan ideal.</p>
+      </div>
+      <div class="lp-hero__botones">
+        <a routerLink="/registro" class="btn btn-lg btn-light">Crear cuenta gratis</a>
+        <a routerLink="/login" class="btn btn-lg btn-outline-light">Iniciar sesión</a>
+      </div>
+    </div>
+  </section>
+</main>

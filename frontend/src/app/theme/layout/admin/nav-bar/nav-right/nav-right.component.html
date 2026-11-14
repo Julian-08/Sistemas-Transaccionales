@@ -1,0 +1,52 @@
+<ul class="navbar-nav align-items-center">
+  @if (verAlertas) {
+    <li>
+      <a routerLink="/inicio/alertas" class="zimbra-campana" title="Alertas sin leer">
+        <i class="icon feather icon-bell"></i>
+        @if (alertasNoLeidas > 0) {
+          <span class="zimbra-campana__contador">{{ alertasNoLeidas > 99 ? '99+' : alertasNoLeidas }}</span>
+        }
+      </a>
+    </li>
+  }
+  <li>
+    <div class="dropdown drp-user" ngbDropdown placement="auto">
+      <a href="javascript:" ngbDropdownToggle data-toggle="dropdown" class="zimbra-usuario">
+        <span class="zimbra-usuario__avatar">{{ iniciales }}</span>
+        <span class="zimbra-usuario__texto d-none d-md-inline-flex">
+          <strong>{{ sesion()?.nombre }}</strong>
+          <small>{{ nombreRol }}</small>
+        </span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end profile-notification" ngbDropdownMenu>
+        <div class="pro-head">
+          <span class="zimbra-usuario__avatar zimbra-usuario__avatar--claro">{{ iniciales }}</span>
+          <span>{{ sesion()?.nombre }}</span>
+          <a href="javascript:" class="dud-logout" title="Cerrar sesión" (click)="cerrarSesion()">
+            <i class="feather icon-log-out"></i>
+          </a>
+        </div>
+        <ul class="pro-body">
+          <li>
+            <span class="dropdown-item text-muted">
+              <i class="feather icon-mail"></i>
+              {{ sesion()?.email }}
+            </span>
+          </li>
+          <li>
+            <a [routerLink]="rutaInicio" class="dropdown-item">
+              <i class="feather icon-home"></i>
+              Mi inicio
+            </a>
+          </li>
+          <li>
+            <a href="javascript:" class="dropdown-item" (click)="cerrarSesion()">
+              <i class="feather icon-log-out"></i>
+              Cerrar sesión
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </li>
+</ul>

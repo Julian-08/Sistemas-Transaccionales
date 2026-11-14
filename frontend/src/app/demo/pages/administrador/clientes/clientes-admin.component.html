@@ -1,0 +1,139 @@
+<div class="zb-encabezado">
+  <div>
+    <h4>Clientes</h4>
+    <p>
+      Los clientes no se borran: se inactivan después de {{ diasInactividad }} días sin ingresar y sin licencia, y su historial se conserva.
+    </p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <button type="button" class="btn btn-zimbra" (click)="nuevo()"><i class="feather icon-user-plus me-1"></i> Nuevo cliente</button>
+    @if (totalInactivables > 0) {
+      <button type="button" class="btn btn-outline-danger" (click)="inactivarTodos()">
+        <i class="feather icon-user-x me-1"></i> Inactivar {{ totalInactivables }} sin actividad
+      </button>
+    }
+  </div>
+</div>
+
+@if (mostrarFormulario) {
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5>Nuevo cliente</h5>
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="mostrarFormulario = false"></button>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="crear()" novalidate class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="c-nombre">Nombre del contacto</label>
+          <input id="c-nombre" class="form-control" formControlName="nombre" [class.is-invalid]="f['nombre'].touched && f['nombre'].invalid" />
+          <div class="invalid-feedback">El nombre es obligatorio.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="c-empresa">Empresa</label>
+          <input id="c-empresa" class="form-control" formControlName="empresa" [class.is-invalid]="f['empresa'].touched && f['empresa'].invalid" />
+          <div class="invalid-feedback">La empresa es obligatoria.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="c-email">Correo</label>
+          <input id="c-email" type="email" class="form-control" formControlName="email" [class.is-invalid]="f['email'].touched && f['email'].invalid" />
+          <div class="invalid-feedback">Ingresa un correo válido.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="c-contrasena">Contraseña inicial</label>
+          <input id="c-contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password"
+            [class.is-invalid]="f['contrasena'].touched && f['contrasena'].invalid" />
+          <div class="invalid-feedback">Mínimo 8 caracteres, con letras y números.</div>
+        </div>
+        <div class="col-12 d-flex gap-2 justify-content-end">
+          <button type="button" class="btn btn-light" (click)="mostrarFormulario = false">Cancelar</button>
+          <button type="submit" class="btn btn-zimbra" [disabled]="guardando">{{ guardando ? 'Guardando...' : 'Crear cliente' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<div class="card">
+  <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <div class="btn-group flex-wrap" role="group" aria-label="Filtrar clientes">
+      @for (opcion of filtros; track opcion.valor) {
+        <button type="button" class="btn btn-sm" [ngClass]="filtro === opcion.valor ? 'btn-zimbra' : 'btn-outline-secondary'"
+          (click)="aplicarFiltro(opcion.valor)">{{ opcion.etiqueta }}</button>
+      }
+    </div>
+    <input type="search" class="form-control form-control-sm" style="max-width: 260px" placeholder="Buscar cliente o empresa"
+      [ngModel]="lista.terminoBusqueda" (ngModelChange)="lista.buscar($event)" aria-label="Buscar clientes" />
+  </div>
+  <div class="card-body">
+    @if (cargando) {
+      <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover zb-tabla mb-0">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Empresa</th>
+              <th class="text-center">Puntaje</th>
+              <th>Prospecto</th>
+              <th>Asesor</th>
+              <th>Último ingreso</th>
+              <th>Licencia</th>
+              <th>Estado</th>
+              <th class="text-end">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cliente of lista.paginados; track cliente.idCliente) {
+              <tr>
+                <td>
+                  {{ cliente.nombre }}
+                  <div class="small text-muted">{{ cliente.email }}</div>
+                </td>
+                <td>{{ cliente.empresa }}</td>
+                <td class="text-center">{{ cliente.puntaje }}</td>
+                <td>
+                  @if (cliente.esProspecto) {
+                    <a [routerLink]="['/inicio/prospecto', cliente.idCliente]" class="zb-estado zb-estado--{{ cliente.estadoProspecto }} text-decoration-none">
+                      {{ cliente.estadoProspecto }}
+                    </a>
+                  } @else {
+                    <span class="text-muted small">No</span>
+                  }
+                </td>
+                <td>{{ cliente.nombreAsesor || '—' }}</td>
+                <td>
+                  {{ cliente.ultimoIngreso ? (cliente.ultimoIngreso | date: 'dd/MM/yyyy') : 'Nunca' }}
+                  <div class="small text-muted">
+                    {{ cliente.diasSinIngresar === 0 ? 'hoy' : 'hace ' + cliente.diasSinIngresar + (cliente.diasSinIngresar === 1 ? ' día' : ' días') }}
+                  </div>
+                </td>
+                <td>
+                  @if (cliente.tieneLicencia) {
+                    <span class="zb-estado zb-estado--ACEPTADA">Sí</span>
+                  } @else {
+                    <span class="text-muted small">No</span>
+                  }
+                </td>
+                <td><span class="zb-estado zb-estado--{{ cliente.estado }}">{{ cliente.estado }}</span></td>
+                <td class="text-end text-nowrap">
+                  @if (cliente.estado === 'INACTIVO') {
+                    <button type="button" class="btn btn-sm btn-outline-success" (click)="activar(cliente)">Activar</button>
+                  } @else if (cliente.inactivable) {
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="inactivar(cliente)">Inactivar</button>
+                  } @else {
+                    <button type="button" class="btn btn-sm btn-light" disabled [title]="motivoNoInactivable(cliente)">Inactivar</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="9" class="zb-vacio"><i class="feather icon-briefcase"></i>No hay clientes para este filtro.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginacion [pagina]="lista.paginaActual" [totalPaginas]="lista.totalPaginas" [totalRegistros]="lista.filtrados.length"
+        (cambiar)="lista.cambiarPagina($event)" />
+    }
+  </div>
+</div>

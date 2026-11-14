@@ -1,0 +1,319 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'scss/variables';
+
+/* fonts-icon */
+@import 'scss/fonts/fontawesome/scss/fontawesome';
+@import 'scss/fonts/feather/iconfont';
+
+@import 'scss/general';
+@import 'scss/generic';
+@import 'scss/mixins/function';
+
+/* important element */
+@import 'scss/menu/menu-lite';
+
+/* basic elements */
+@import 'scss/theme-elements/theme-elements';
+
+/* third party modules style*/
+@import 'scss/plugins/plugins';
+
+@import 'scss/custom';
+
+
+
+/* ===================================================================
+   Estilos de Zimbra CRM que pueden usar todos los componentes
+   =================================================================== */
+
+:root {
+	--zb-azul: #0b5cad;
+	--zb-azul-claro: #1f8bff;
+	--zb-naranja: #ff8a00;
+	--zb-tinta: #16263d;
+	--zb-gris: #66758a;
+	--zb-linea: #e3e8ef;
+	--zb-fondo: #f4f7fb;
+}
+
+/* Encabezado de cada pagina interna */
+.zb-encabezado {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 20px;
+
+	h4 {
+		margin: 0;
+		color: var(--zb-tinta);
+		font-weight: 600;
+	}
+
+	p {
+		margin: 4px 0 0;
+		color: var(--zb-gris);
+	}
+}
+
+/* Tarjetas de indicadores */
+.zb-indicadores {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.zb-indicador {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 18px;
+	border: 1px solid var(--zb-linea);
+	border-radius: 10px;
+	background: #fff;
+
+	i {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 10px;
+		background: rgba(11, 92, 173, 0.1);
+		color: var(--zb-azul);
+		font-size: 20px;
+	}
+
+	strong {
+		display: block;
+		color: var(--zb-tinta);
+		font-size: 22px;
+		line-height: 1.1;
+	}
+
+	span {
+		color: var(--zb-gris);
+		font-size: 13px;
+	}
+
+	&--naranja i {
+		background: rgba(255, 138, 0, 0.12);
+		color: var(--zb-naranja);
+	}
+
+	&--verde i {
+		background: rgba(29, 185, 120, 0.12);
+		color: #129b63;
+	}
+
+	&--rojo i {
+		background: rgba(244, 66, 54, 0.1);
+		color: #e0362b;
+	}
+}
+
+/* Etiquetas de estado */
+.zb-estado {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 12px;
+	background: #eef1f5;
+	color: var(--zb-tinta);
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+
+	&--NUEVO,
+	&--ENVIADA {
+		background: #e3f0ff;
+		color: #0b5cad;
+	}
+
+	&--CONTACTADO,
+	&--EN_REVISION {
+		background: #fff4e0;
+		color: #b26200;
+	}
+
+	&--INTERESADO {
+		background: #f1e8ff;
+		color: #6b3fc2;
+	}
+
+	&--CERRADO,
+	&--ACEPTADA,
+	&--ACTIVO {
+		background: #e2f7ec;
+		color: #12804f;
+	}
+
+	&--DESCARTADO,
+	&--RECHAZADA,
+	&--INACTIVO {
+		background: #fde8e7;
+		color: #c62f24;
+	}
+}
+
+/* Barras horizontales simples para graficas */
+.zb-barra {
+	height: 10px;
+	border-radius: 5px;
+	background: #edf1f6;
+	overflow: hidden;
+
+	span {
+		display: block;
+		height: 100%;
+		border-radius: 5px;
+		background: linear-gradient(90deg, var(--zb-azul-claro), var(--zb-azul));
+	}
+}
+
+.zb-vacio {
+	padding: 32px 16px;
+	color: var(--zb-gris);
+	text-align: center;
+
+	i {
+		display: block;
+		margin-bottom: 8px;
+		font-size: 28px;
+		opacity: 0.6;
+	}
+}
+
+.zb-tabla {
+	th {
+		color: var(--zb-gris);
+		font-size: 12px;
+		font-weight: 600;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	td {
+		vertical-align: middle;
+	}
+}
+
+.btn-zimbra {
+	background: var(--zb-azul);
+	border-color: var(--zb-azul);
+	color: #fff;
+
+	&:hover,
+	&:focus-visible {
+		background: #084a8c;
+		border-color: #084a8c;
+		color: #fff;
+	}
+}
+
+/* ------------------------------------------------- paginas de acceso */
+
+.zb-acceso {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	min-height: 100vh;
+	background: var(--zb-fondo);
+
+	@media (max-width: 860px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* El componente de la marca ocupa toda la columna izquierda. */
+app-acceso-marca {
+	display: flex;
+
+	@media (max-width: 860px) {
+		display: none;
+	}
+}
+
+.zb-acceso__marca {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 48px;
+	background: linear-gradient(150deg, #0b5cad 0%, #08386b 100%);
+	color: #fff;
+
+	h2 {
+		margin: 24px 0 12px;
+		color: #fff;
+		font-size: 30px;
+		font-weight: 600;
+		line-height: 1.25;
+	}
+
+	p,
+	li {
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	ul {
+		padding-left: 18px;
+	}
+
+	@media (max-width: 860px) {
+		display: none;
+	}
+}
+
+.zb-acceso__logo {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: inherit;
+	font-size: 18px;
+	font-weight: 600;
+	text-decoration: none;
+
+	img {
+		width: 40px;
+		height: 40px;
+	}
+}
+
+.zb-acceso__formulario {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 32px 16px;
+}
+
+.zb-acceso__tarjeta {
+	width: 100%;
+	max-width: 420px;
+	padding: 36px 32px;
+	border-radius: 12px;
+	background: #fff;
+	box-shadow: 0 10px 40px rgba(22, 38, 61, 0.08);
+
+	h3 {
+		margin-bottom: 6px;
+		color: var(--zb-tinta);
+		font-weight: 600;
+	}
+
+	.form-label {
+		color: var(--zb-tinta);
+		font-weight: 600;
+	}
+}
+
+.zb-acceso__volver {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 20px;
+	color: var(--zb-gris);
+	font-size: 13px;
+	text-decoration: none;
+}

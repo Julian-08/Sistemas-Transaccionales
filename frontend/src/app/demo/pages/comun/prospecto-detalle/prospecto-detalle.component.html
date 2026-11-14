@@ -1,0 +1,237 @@
+@if (cargando && !detalle) {
+  <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+} @else if (detalle) {
+  <div class="zb-encabezado">
+    <div>
+      <a href="javascript:" class="small text-muted" (click)="volver()">
+        <i class="feather icon-arrow-left"></i> Volver
+      </a>
+      <h4 class="mt-1">
+        {{ detalle.prospecto.nombre }}
+        <span class="zb-estado zb-estado--{{ detalle.prospecto.estadoProspecto }} ms-2 align-middle">{{ detalle.prospecto.estadoProspecto }}</span>
+      </h4>
+      <p>{{ detalle.prospecto.empresa }} · {{ detalle.prospecto.email }}</p>
+    </div>
+    @if (esAsesor) {
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="mostrarSeguimiento = !mostrarSeguimiento; mostrarPropuesta = false"
+          [disabled]="!puedeGestionar">
+          <i class="feather icon-phone-call me-1"></i> Registrar contacto
+        </button>
+        <button type="button" class="btn btn-zimbra" (click)="mostrarPropuesta = !mostrarPropuesta; mostrarSeguimiento = false"
+          [disabled]="!puedeGestionar">
+          <i class="feather icon-navigation me-1"></i> Ofrecer plan de pago
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="zb-indicadores">
+    <div class="zb-indicador">
+      <i class="feather icon-trending-up"></i>
+      <div><strong>{{ detalle.prospecto.puntaje }}</strong><span>Puntaje de interés</span></div>
+    </div>
+    <div class="zb-indicador zb-indicador--naranja">
+      <i class="feather icon-log-in"></i>
+      <div><strong>{{ detalle.totalIngresos }}</strong><span>Ingresos totales</span></div>
+    </div>
+    <div class="zb-indicador">
+      <i class="feather icon-globe"></i>
+      <div><strong>{{ totalPaginasVisitadas }}</strong><span>Páginas visitadas</span></div>
+    </div>
+    <div class="zb-indicador">
+      <i class="feather icon-clock"></i>
+      <div><strong>{{ tiempoTotalMinutos }} min</strong><span>Tiempo en el sitio</span></div>
+    </div>
+    <div class="zb-indicador zb-indicador--verde">
+      <i class="feather icon-user-check"></i>
+      <div><strong class="fs-6">{{ detalle.prospecto.nombreAsesor || 'Sin asesor' }}</strong><span>Asesor asignado</span></div>
+    </div>
+  </div>
+
+  @if (mostrarSeguimiento) {
+    <div class="card">
+      <div class="card-header"><h5>Registrar contacto con el prospecto</h5></div>
+      <div class="card-body">
+        <form [formGroup]="formSeguimiento" (ngSubmit)="registrarSeguimiento()" novalidate class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label" for="medio">Medio</label>
+            <select id="medio" class="form-select" formControlName="medio">
+              <option value="LLAMADA">Llamada</option>
+              <option value="CORREO">Correo</option>
+            </select>
+          </div>
+          <div class="col-md-9">
+            <label class="form-label" for="observaciones">Observaciones</label>
+            <textarea id="observaciones" rows="3" class="form-control" formControlName="observaciones"
+              placeholder="¿Qué se habló? ¿Qué necesita la empresa? ¿Cuál es el siguiente paso?"
+              [class.is-invalid]="fs['observaciones'].touched && fs['observaciones'].invalid"></textarea>
+            <div class="invalid-feedback">Escribe las observaciones del contacto.</div>
+          </div>
+          <div class="col-12 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light" (click)="mostrarSeguimiento = false">Cancelar</button>
+            <button type="submit" class="btn btn-zimbra" [disabled]="guardando">Guardar contacto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (mostrarPropuesta) {
+    <div class="card border-primary">
+      <div class="card-header"><h5>Ofrecer plan de pago</h5></div>
+      <div class="card-body">
+        <p class="text-muted">
+          Crea una propuesta con el monto estimado de la licencia. Cuando el cliente acepte, cierra la venta desde <a routerLink="/inicio/asesor/propuestas">Propuestas</a>.
+        </p>
+        <form [formGroup]="formPropuesta" (ngSubmit)="crearPropuesta()" novalidate class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label" for="monto">Monto estimado (COP)</label>
+            <input id="monto" type="number" min="1" step="10000" class="form-control" formControlName="montoEstimado"
+              [class.is-invalid]="formPropuesta.controls.montoEstimado.touched && formPropuesta.controls.montoEstimado.invalid" />
+            <div class="invalid-feedback">El monto debe ser mayor que cero.</div>
+          </div>
+          <div class="col-auto d-flex gap-2">
+            <button type="button" class="btn btn-light" (click)="mostrarPropuesta = false">Cancelar</button>
+            <button type="submit" class="btn btn-zimbra" [disabled]="guardando">Crear propuesta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-xl-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h5>Información del cliente</h5></div>
+        <div class="card-body">
+          <dl class="mb-0">
+            <dt class="small text-muted">Contacto</dt>
+            <dd>{{ detalle.prospecto.nombre }}</dd>
+            <dt class="small text-muted">Empresa</dt>
+            <dd>{{ detalle.prospecto.empresa }}</dd>
+            <dt class="small text-muted">Correo</dt>
+            <dd><a [href]="'mailto:' + detalle.prospecto.email">{{ detalle.prospecto.email }}</a></dd>
+            <dt class="small text-muted">Prospecto desde</dt>
+            <dd>{{ detalle.prospecto.fechaClasificacion | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            <dt class="small text-muted">Última actividad</dt>
+            <dd>{{ detalle.prospecto.ultimaActividad ? (detalle.prospecto.ultimaActividad | date: 'dd/MM/yyyy HH:mm') : '—' }}</dd>
+          </dl>
+          @if (esAsesor) {
+            <hr />
+            <label class="form-label small fw-semibold" for="estado">Estado del prospecto</label>
+            <div class="input-group">
+              <select id="estado" class="form-select" [(ngModel)]="nuevoEstado">
+                @for (estado of estados; track estado) {
+                  <option [ngValue]="estado">{{ estado }}</option>
+                }
+              </select>
+              <button type="button" class="btn btn-zimbra" [disabled]="nuevoEstado === detalle.prospecto.estadoProspecto" (click)="cambiarEstado()">
+                Cambiar
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-8 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <button type="button" class="nav-link" [class.active]="pestana === 'actividad'" (click)="pestana = 'actividad'">
+                Navegación ({{ detalle.actividades.length }})
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-link" [class.active]="pestana === 'ingresos'" (click)="pestana = 'ingresos'">
+                Ingresos ({{ detalle.ingresos.length }})
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-link" [class.active]="pestana === 'seguimientos'" (click)="pestana = 'seguimientos'">
+                Seguimientos ({{ detalle.seguimientos.length }})
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-link" [class.active]="pestana === 'propuestas'" (click)="pestana = 'propuestas'">
+                Propuestas ({{ propuestas.length }})
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body" style="max-height: 460px; overflow-y: auto">
+          @if (detalle.mensaje) {
+            <div class="alert alert-info">{{ detalle.mensaje }}</div>
+          }
+          @switch (pestana) {
+            @case ('actividad') {
+              <ul class="list-unstyled mb-0">
+                @for (actividad of detalle.actividades; track actividad.idActividad) {
+                  <li class="d-flex gap-3 py-2 border-bottom">
+                    <i class="feather text-primary mt-1" [ngClass]="icono(actividad.tipoEvento)"></i>
+                    <div class="flex-grow-1">
+                      <strong>{{ actividad.tipoEvento }}</strong>
+                      <span class="text-muted"> · {{ actividad.urlVisitada || '—' }}</span>
+                      <div class="small text-muted">
+                        {{ actividad.fechaHora | date: 'dd/MM/yyyy HH:mm' }} · {{ actividad.tiempoPermanenciaSeg }} s en la página
+                      </div>
+                    </div>
+                    <span class="badge bg-light text-dark align-self-start">+{{ actividad.scoringInteres }}</span>
+                  </li>
+                } @empty {
+                  <li class="zb-vacio">Sin navegación registrada.</li>
+                }
+              </ul>
+            }
+            @case ('ingresos') {
+              <ul class="list-unstyled mb-0">
+                @for (ingreso of detalle.ingresos; track ingreso.idIngreso) {
+                  <li class="py-2 border-bottom"><i class="feather icon-log-in text-primary me-2"></i>{{ ingreso.fechaHora | date: 'EEEE dd/MM/yyyy, HH:mm' }}</li>
+                } @empty {
+                  <li class="zb-vacio">El cliente no ha iniciado sesión.</li>
+                }
+              </ul>
+            }
+            @case ('seguimientos') {
+              <ul class="list-unstyled mb-0">
+                @for (s of detalle.seguimientos; track s.idSeguimiento) {
+                  <li class="py-2 border-bottom">
+                    <div class="d-flex justify-content-between">
+                      <strong><i class="feather me-1" [ngClass]="s.medio === 'LLAMADA' ? 'icon-phone' : 'icon-mail'"></i>{{ s.medio === 'LLAMADA' ? 'Llamada' : 'Correo' }}</strong>
+                      <small class="text-muted">{{ s.fechaSeguimiento | date: 'dd/MM/yyyy HH:mm' }} · {{ s.nombreAsesor }}</small>
+                    </div>
+                    <p class="mb-0 mt-1">{{ s.observaciones }}</p>
+                  </li>
+                } @empty {
+                  <li class="zb-vacio">Todavía no hay seguimientos.</li>
+                }
+              </ul>
+            }
+            @case ('propuestas') {
+              <table class="table zb-tabla mb-0">
+                <thead><tr><th>#</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
+                <tbody>
+                  @for (p of propuestas; track p.idPropuesta) {
+                    <tr>
+                      <td>{{ p.idPropuesta }}</td>
+                      <td>{{ p.fechaEmision | date: 'dd/MM/yyyy' }}</td>
+                      <td>{{ p.montoEstimado | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+                      <td><span class="zb-estado zb-estado--{{ p.estado }}">{{ p.estado }}</span></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="zb-vacio">Sin propuestas.</td></tr>
+                  }
+                </tbody>
+              </table>
+              @if (esAsesor && propuestas.length) {
+                <a routerLink="/inicio/asesor/propuestas" class="btn btn-sm btn-outline-primary mt-3">Gestionar propuestas y ventas</a>
+              }
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

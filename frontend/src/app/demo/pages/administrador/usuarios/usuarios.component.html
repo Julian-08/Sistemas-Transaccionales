@@ -1,0 +1,126 @@
+<div class="zb-encabezado">
+  <div>
+    <h4>Usuarios y asesores</h4>
+    <p>Crea y ajusta las cuentas del equipo. Las contraseñas se guardan cifradas.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <button type="button" class="btn btn-zimbra" (click)="nuevo(2)"><i class="feather icon-user-plus me-1"></i> Nuevo asesor</button>
+    <button type="button" class="btn btn-outline-secondary" (click)="nuevo(1)"><i class="feather icon-shield me-1"></i> Nuevo administrador</button>
+  </div>
+</div>
+
+@if (modo) {
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5>
+        {{ modo === 'crear' ? (f['idRol'].value == 1 ? 'Nuevo administrador' : 'Nuevo asesor comercial') : 'Editar ' + usuarioEditado?.nombre }}
+      </h5>
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="cancelar()"></button>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="nombre">Nombre completo</label>
+          <input id="nombre" class="form-control" formControlName="nombre" [class.is-invalid]="f['nombre'].touched && f['nombre'].invalid" />
+          <div class="invalid-feedback">El nombre es obligatorio.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="email">Correo</label>
+          <input id="email" type="email" class="form-control" formControlName="email" [class.is-invalid]="f['email'].touched && f['email'].invalid" />
+          <div class="invalid-feedback">Ingresa un correo válido.</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="contrasena">
+            {{ modo === 'crear' ? 'Contraseña inicial' : 'Nueva contraseña (opcional)' }}
+          </label>
+          <input id="contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password"
+            [class.is-invalid]="f['contrasena'].touched && f['contrasena'].invalid" />
+          <div class="form-text">Mínimo 8 caracteres, con letras y números.</div>
+          <div class="invalid-feedback">Mínimo 8 caracteres, con letras y números.</div>
+        </div>
+        @if (modo === 'crear' && f['idRol'].value == 2) {
+          <div class="col-md-6">
+            <label class="form-label" for="meta">Meta mensual de ventas (COP)</label>
+            <input id="meta" type="number" min="0" step="100000" class="form-control" formControlName="metaMensual" />
+          </div>
+        }
+        <div class="col-12 d-flex gap-2 justify-content-end">
+          <button type="button" class="btn btn-light" (click)="cancelar()">Cancelar</button>
+          <button type="submit" class="btn btn-zimbra" [disabled]="guardando">{{ guardando ? 'Guardando...' : 'Guardar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<div class="card">
+  <div class="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <div class="btn-group" role="group" aria-label="Filtrar por rol">
+      @for (filtro of filtros; track filtro.valor) {
+        <button type="button" class="btn btn-sm" [ngClass]="filtroRol === filtro.valor ? 'btn-zimbra' : 'btn-outline-secondary'"
+          (click)="cambiarFiltro(filtro.valor)">{{ filtro.etiqueta }}</button>
+      }
+    </div>
+    <input type="search" class="form-control form-control-sm" style="max-width: 260px" placeholder="Buscar por nombre o correo"
+      [ngModel]="lista.terminoBusqueda" (ngModelChange)="lista.buscar($event)" aria-label="Buscar usuarios" />
+  </div>
+  <div class="card-body">
+    @if (cargando) {
+      <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover zb-tabla mb-0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usuario of lista.paginados; track usuario.idUsuario) {
+              <tr>
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ usuario.rol }}</td>
+                <td><span class="zb-estado zb-estado--{{ usuario.estado }}">{{ usuario.estado }}</span></td>
+                <td>{{ usuario.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
+                <td class="text-end text-nowrap">
+                  @if (usuario.idRol === 3) {
+                    <a routerLink="/inicio/admin/clientes" class="btn btn-sm btn-light">Ver en clientes</a>
+                  } @else {
+                    <button type="button" class="btn btn-sm btn-light" title="Editar" (click)="editar(usuario)">
+                      <i class="feather icon-edit-2"></i>
+                    </button>
+                    @if (usuario.idRol === 2) {
+                      <button type="button" class="btn btn-sm btn-light" title="Volver administrador" (click)="cambiarRol(usuario, 1)">
+                        <i class="feather icon-shield"></i>
+                      </button>
+                    } @else if (usuario.idUsuario !== idSesion) {
+                      <button type="button" class="btn btn-sm btn-light" title="Volver asesor" (click)="cambiarRol(usuario, 2)">
+                        <i class="feather icon-user"></i>
+                      </button>
+                    }
+                    @if (usuario.idUsuario !== idSesion) {
+                      <button type="button" class="btn btn-sm" [ngClass]="usuario.estado === 'ACTIVO' ? 'btn-outline-danger' : 'btn-outline-success'"
+                        (click)="cambiarEstado(usuario)">
+                        {{ usuario.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                      </button>
+                    }
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="zb-vacio"><i class="feather icon-users"></i>No hay usuarios para mostrar.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginacion [pagina]="lista.paginaActual" [totalPaginas]="lista.totalPaginas" [totalRegistros]="lista.filtrados.length"
+        (cambiar)="lista.cambiarPagina($event)" />
+    }
+  </div>
+</div>

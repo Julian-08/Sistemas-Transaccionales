@@ -1,0 +1,121 @@
+<div class="zb-encabezado">
+  <div>
+    <h4>Hola, {{ sesion()?.nombre }}</h4>
+    <p>Así va la gestión comercial de Zimbra este mes.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a routerLink="/inicio/admin/calificados" class="btn btn-zimbra"><i class="feather icon-star me-1"></i> Listos para plan de pago</a>
+    <a routerLink="/inicio/admin/reportes" class="btn btn-outline-secondary"><i class="feather icon-bar-chart-2 me-1"></i> Reportes</a>
+  </div>
+</div>
+
+@if (cargando) {
+  <div class="zb-vacio"><span class="spinner-border text-primary"></span></div>
+} @else {
+  <div class="zb-indicadores">
+    <div class="zb-indicador">
+      <i class="feather icon-briefcase"></i>
+      <div><strong>{{ resumen['clientes_activos'] }}</strong><span>Clientes activos de {{ resumen['total_clientes'] }}</span></div>
+    </div>
+    <div class="zb-indicador zb-indicador--naranja">
+      <i class="feather icon-star"></i>
+      <div>
+        <strong>{{ resumen['clientes_calificados'] }}</strong>
+        <span>Listos para plan ({{ resumen['ingresos_calificado'] }}+ ingresos en {{ resumen['dias_calificado'] }} días)</span>
+      </div>
+    </div>
+    <div class="zb-indicador">
+      <i class="feather icon-user-check"></i>
+      <div><strong>{{ resumen['prospectos'] }}</strong><span>Prospectos</span></div>
+    </div>
+    <a class="zb-indicador zb-indicador--rojo text-decoration-none" routerLink="/inicio/admin/prospectos">
+      <i class="feather icon-alert-circle"></i>
+      <div><strong>{{ resumen['prospectos_sin_asignar'] }}</strong><span>Prospectos sin asesor</span></div>
+    </a>
+    <div class="zb-indicador">
+      <i class="feather icon-users"></i>
+      <div><strong>{{ resumen['asesores_activos'] }}</strong><span>Asesores activos</span></div>
+    </div>
+    <div class="zb-indicador">
+      <i class="feather icon-download-cloud"></i>
+      <div><strong>{{ resumen['pruebas_vigentes'] }}</strong><span>Pruebas vigentes</span></div>
+    </div>
+    <div class="zb-indicador zb-indicador--verde">
+      <i class="feather icon-credit-card"></i>
+      <div>
+        <strong>{{ resumen['monto_mes'] | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+        <span>{{ resumen['ventas_mes'] }} ventas este mes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-5 mb-4">
+      <div class="card h-100">
+        <div class="card-header"><h5>Embudo del mes</h5></div>
+        <div class="card-body">
+          @for (paso of embudo; track paso.etiqueta) {
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ paso.etiqueta }}</span><strong>{{ paso.valor }}</strong>
+              </div>
+              <div class="zb-barra"><span [style.width.%]="(paso.valor / maximoEmbudo) * 100"></span></div>
+            </div>
+          }
+          <p class="mb-0 mt-3 text-muted">
+            Tasa de conversión de prospectos a ventas:
+            <strong class="text-dark">{{ tasaConversion !== null ? (tasaConversion | number: '1.0-2') + ' %' : 'sin datos' }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Desempeño de asesores (mes)</h5>
+          <a routerLink="/inicio/admin/asesores" class="small">Ajustar metas</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 zb-tabla">
+              <thead>
+                <tr>
+                  <th>Asesor</th>
+                  <th class="text-center">Prospectos</th>
+                  <th class="text-center">Seguim.</th>
+                  <th class="text-center">Ventas</th>
+                  <th>Meta</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (asesor of asesores; track asesor.asesor) {
+                  <tr>
+                    <td>
+                      {{ asesor.asesor }}
+                      @if (asesor.estado === 'INACTIVO') {
+                        <span class="zb-estado zb-estado--INACTIVO ms-1">Inactivo</span>
+                      }
+                    </td>
+                    <td class="text-center">{{ asesor.prospectos_asignados }}</td>
+                    <td class="text-center">{{ asesor.seguimientos }}</td>
+                    <td class="text-center">{{ asesor.ventas }}</td>
+                    <td style="min-width: 160px">
+                      <div class="small d-flex justify-content-between">
+                        <span>{{ asesor.monto_vendido | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+                        <span>{{ porcentajeMeta(asesor) }} %</span>
+                      </div>
+                      <div class="zb-barra"><span [style.width.%]="porcentajeMeta(asesor)"></span></div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="zb-vacio">No hay asesores registrados.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
