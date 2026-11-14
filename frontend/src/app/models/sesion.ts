@@ -36,6 +36,14 @@ export interface RespuestaRs {
   id?: number;
 }
 
+/** Respuesta de "olvidé mi contraseña". El código solo viene en desarrollo. */
+export interface RecuperacionRs {
+  exito: boolean;
+  mensaje: string;
+  codigo?: string;
+  minutosVigencia?: number;
+}
+
 /** Error devuelto por el GlobalExceptionHandler del backend. */
 export interface ErrorRs {
   status: number;

@@ -4,7 +4,7 @@ import { Observable, tap } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
 import { BackendService, CLAVE_TOKEN } from './backend.service';
-import { LoginRs, RespuestaRs, Rol, UsuarioSesion } from '../models/sesion';
+import { LoginRs, RecuperacionRs, RespuestaRs, Rol, UsuarioSesion } from '../models/sesion';
 import { RegistroClienteRq } from '../models/cliente';
 
 const CLAVE_SESION = 'sesion';
@@ -44,14 +44,14 @@ export class AuthService {
     return this.backend.post<RespuestaRs>(environment.apiUrlAuth, this.api, 'registro', registro);
   }
 
-  recuperarContrasena(email: string): Observable<RespuestaRs> {
-    return this.backend.post<RespuestaRs>(environment.apiUrlAuth, this.api, 'recuperar-contrasena', { email });
+  recuperarContrasena(email: string): Observable<RecuperacionRs> {
+    return this.backend.post<RecuperacionRs>(environment.apiUrlAuth, this.api, 'recuperar-contrasena', { email });
   }
 
-  restablecerContrasena(idUsuario: number, token: string, nuevaContrasena: string): Observable<RespuestaRs> {
+  restablecerContrasena(email: string, codigo: string, nuevaContrasena: string): Observable<RespuestaRs> {
     return this.backend.post<RespuestaRs>(environment.apiUrlAuth, this.api, 'restablecer-contrasena', {
-      idUsuario,
-      token,
+      email,
+      codigo,
       nuevaContrasena
     });
   }

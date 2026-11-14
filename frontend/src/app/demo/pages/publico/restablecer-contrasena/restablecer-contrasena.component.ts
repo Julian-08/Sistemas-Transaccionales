@@ -9,47 +9,55 @@ import { AccesoMarcaComponent } from '../acceso-marca/acceso-marca.component';
 import { PATRON_CONTRASENA, contrasenasIguales } from '../registro/registro.component';
 
 /**
- * Pagina del enlace del correo de recuperacion (RF-003).
- * El enlace trae ?usuario=ID&token=TOKEN.
+ * Define la nueva contrasena con el correo y el codigo de recuperacion (RF-003).
+ * Puede llegar con ?email=...&codigo=... para dejar los campos llenos.
  */
 @Component({
   selector: 'app-restablecer-contrasena',
   imports: [CommonModule, ReactiveFormsModule, RouterModule, AccesoMarcaComponent],
   template: `
     <div class="zb-acceso">
-      <app-acceso-marca titulo="Define tu nueva contraseña" texto="Por seguridad, el enlace tiene un tiempo de vigencia limitado." />
+      <app-acceso-marca titulo="Define tu nueva contraseña" texto="El código dura 15 minutos y solo se puede usar una vez." />
       <div class="zb-acceso__formulario">
         <div class="zb-acceso__tarjeta">
           <a routerLink="/login" class="zb-acceso__volver"><i class="feather icon-arrow-left"></i> Volver a iniciar sesión</a>
           <h3>Nueva contraseña</h3>
-
-          @if (!enlaceValido) {
-            <div class="alert alert-warning mt-3">
-              El enlace no es válido. <a routerLink="/recuperar-contrasena">Solicita uno nuevo</a>.
-            </div>
-          } @else {
-            <p class="text-muted mb-4">Mínimo 8 caracteres, con letras y números.</p>
-            @if (mensajeError) {
-              <div class="alert alert-danger py-2" role="alert">{{ mensajeError }}</div>
-            }
-            <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
-              <div class="mb-3">
-                <label class="form-label" for="contrasena">Nueva contraseña</label>
-                <input id="contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password"
-                  [class.is-invalid]="form.controls.contrasena.touched && form.controls.contrasena.invalid" />
-                <div class="invalid-feedback">Mínimo 8 caracteres, con letras y números.</div>
-              </div>
-              <div class="mb-4">
-                <label class="form-label" for="confirmacion">Confirmar contraseña</label>
-                <input id="confirmacion" type="password" class="form-control" formControlName="confirmacion" autocomplete="new-password"
-                  [class.is-invalid]="form.controls.confirmacion.touched && (form.controls.confirmacion.invalid || form.hasError('noCoinciden'))" />
-                <div class="invalid-feedback">Las contraseñas no coinciden.</div>
-              </div>
-              <button type="submit" class="btn btn-zimbra w-100" [disabled]="cargando">
-                {{ cargando ? 'Guardando...' : 'Guardar contraseña' }}
-              </button>
-            </form>
+          <p class="text-muted mb-4">
+            Escribe tu correo y el código. ¿No tienes uno? <a routerLink="/recuperar-contrasena">Solicítalo aquí</a>.
+          </p>
+          @if (mensajeError) {
+            <div class="alert alert-danger py-2" role="alert">{{ mensajeError }}</div>
           }
+          <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+            <div class="mb-3">
+              <label class="form-label" for="email">Correo electrónico</label>
+              <input id="email" type="email" class="form-control" formControlName="email" autocomplete="email"
+                [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid" />
+              <div class="invalid-feedback">Ingresa un correo válido.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="codigo">Código de recuperación</label>
+              <input id="codigo" type="text" class="form-control text-uppercase" formControlName="codigo"
+                autocomplete="one-time-code" placeholder="XXXX-XXXX" maxlength="9" style="letter-spacing: 2px"
+                [class.is-invalid]="form.controls.codigo.touched && form.controls.codigo.invalid" />
+              <div class="invalid-feedback">El código tiene 8 caracteres.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="contrasena">Nueva contraseña</label>
+              <input id="contrasena" type="password" class="form-control" formControlName="contrasena" autocomplete="new-password"
+                [class.is-invalid]="form.controls.contrasena.touched && form.controls.contrasena.invalid" />
+              <div class="invalid-feedback">Mínimo 8 caracteres, con letras y números.</div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label" for="confirmacion">Confirmar contraseña</label>
+              <input id="confirmacion" type="password" class="form-control" formControlName="confirmacion" autocomplete="new-password"
+                [class.is-invalid]="form.controls.confirmacion.touched && (form.controls.confirmacion.invalid || form.hasError('noCoinciden'))" />
+              <div class="invalid-feedback">Las contraseñas no coinciden.</div>
+            </div>
+            <button type="submit" class="btn btn-zimbra w-100" [disabled]="cargando">
+              {{ cargando ? 'Guardando...' : 'Guardar contraseña' }}
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -62,25 +70,23 @@ export class RestablecerContrasenaComponent implements OnInit {
 
   readonly form = inject(FormBuilder).nonNullable.group(
     {
+      email: ['', [Validators.required, Validators.email]],
+      codigo: ['', [Validators.required, Validators.pattern(/^\s*[A-Za-z0-9]{4}-?[A-Za-z0-9]{4}\s*$/)]],
       contrasena: ['', [Validators.required, Validators.pattern(PATRON_CONTRASENA)]],
       confirmacion: ['', Validators.required]
     },
     { validators: contrasenasIguales }
   );
 
-  idUsuario = 0;
-  token = '';
   cargando = false;
   mensajeError = '';
 
-  get enlaceValido(): boolean {
-    return this.idUsuario > 0 && !!this.token;
-  }
-
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
-    this.idUsuario = Number(params.get('usuario')) || 0;
-    this.token = params.get('token') ?? '';
+    this.form.patchValue({
+      email: params.get('email') ?? '',
+      codigo: params.get('codigo') ?? ''
+    });
   }
 
   guardar(): void {
@@ -90,7 +96,8 @@ export class RestablecerContrasenaComponent implements OnInit {
     }
     this.cargando = true;
     this.mensajeError = '';
-    this.auth.restablecerContrasena(this.idUsuario, this.token, this.form.getRawValue().contrasena).subscribe({
+    const { email, codigo, contrasena } = this.form.getRawValue();
+    this.auth.restablecerContrasena(email.trim(), codigo.trim(), contrasena).subscribe({
       next: async (rs) => {
         this.cargando = false;
         await mensajeExito(rs.mensaje, 'Contraseña actualizada');
