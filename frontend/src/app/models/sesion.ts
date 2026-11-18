@@ -36,11 +36,10 @@ export interface RespuestaRs {
   id?: number;
 }
 
-/** Respuesta de "olvidé mi contraseña". El código solo viene en desarrollo. */
+/** Respuesta de "olvidé mi contraseña". Nunca trae el código: este llega por correo. */
 export interface RecuperacionRs {
   exito: boolean;
   mensaje: string;
-  codigo?: string;
   minutosVigencia?: number;
 }
 

@@ -10,7 +10,7 @@ import { PATRON_CONTRASENA, contrasenasIguales } from '../registro/registro.comp
 
 /**
  * Define la nueva contrasena con el correo y el codigo de recuperacion (RF-003).
- * Puede llegar con ?email=...&codigo=... para dejar los campos llenos.
+ * Puede llegar con ?email=... para dejar el correo lleno.
  */
 @Component({
   selector: 'app-restablecer-contrasena',
@@ -22,8 +22,14 @@ import { PATRON_CONTRASENA, contrasenasIguales } from '../registro/registro.comp
         <div class="zb-acceso__tarjeta">
           <a routerLink="/login" class="zb-acceso__volver"><i class="feather icon-arrow-left"></i> Volver a iniciar sesión</a>
           <h3>Nueva contraseña</h3>
+          @if (mensajeEnvio) {
+            <div class="alert alert-info py-2" role="status">
+              <i class="feather icon-mail me-1"></i>{{ mensajeEnvio }} El código vence en {{ minutos }} minutos.
+            </div>
+          }
           <p class="text-muted mb-4">
-            Escribe tu correo y el código. ¿No tienes uno? <a routerLink="/recuperar-contrasena">Solicítalo aquí</a>.
+            Escribe el código de verificación que recibiste. ¿No te llegó?
+            <a routerLink="/recuperar-contrasena">Solicita uno nuevo</a>.
           </p>
           @if (mensajeError) {
             <div class="alert alert-danger py-2" role="alert">{{ mensajeError }}</div>
@@ -80,13 +86,18 @@ export class RestablecerContrasenaComponent implements OnInit {
 
   cargando = false;
   mensajeError = '';
+  /** Aviso que llega desde "olvidé mi contraseña" (no viaja en la URL). */
+  mensajeEnvio = '';
+  minutos = 15;
 
   ngOnInit(): void {
-    const params = this.route.snapshot.queryParamMap;
-    this.form.patchValue({
-      email: params.get('email') ?? '',
-      codigo: params.get('codigo') ?? ''
-    });
+    // Solo el correo llega en la URL; el codigo lo escribe el usuario.
+    this.form.patchValue({ email: this.route.snapshot.queryParamMap.get('email') ?? '' });
+    const estado = this.router.getCurrentNavigation()?.extras.state ?? history.state;
+    if (estado?.mensaje) {
+      this.mensajeEnvio = estado.mensaje;
+      this.minutos = estado.minutos ?? this.minutos;
+    }
   }
 
   guardar(): void {

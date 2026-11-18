@@ -158,6 +158,20 @@ CREATE TABLE ventas_licencias (
     CONSTRAINT chk_tipo_licencia CHECK (tipo_licencia IN ('ILIMITADA', 'PAGO_POR_USO'))
 );
 
+-- 12. CONFIGURACIÓN (sirve para que el trigger de trg_clientes_bu, y se pueda tener un filtro de cuales son las personas que interactuan mas de 50 veces en la pagina)
+CREATE TABLE IF NOT EXISTS configuracion (
+    clave               VARCHAR(50)  NOT NULL,
+    valor               VARCHAR(100) NOT NULL,
+    descripcion         VARCHAR(255) NULL,
+    fecha_actualizacion DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                     ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (clave)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+INSERT INTO configuracion (clave, valor, descripcion)
+VALUES ('PUNTAJE_MINIMO', '50', 'Puntaje minimo para clasificar a un cliente como prospecto (RF-017)'),
+       ('DIAS_PRUEBA', '60', 'Dias de vigencia de la prueba gratuita de Zimbra')
+ON DUPLICATE KEY UPDATE clave = clave;
 -- =====================================================================
 -- TRIGGERS
 -- Regla: un trigger no debe leer ni escribir la tabla que dispara la
@@ -235,6 +249,27 @@ BEGIN
        AND estado_prospecto = 'NUEVO';
 END$$
 
+
+-- T5 El trigger ya no usa el 50 fijo: lee el puntaje minimo de configuracion.
+DROP TRIGGER IF EXISTS trg_clientes_bu;
+DELIMITER //
+CREATE TRIGGER trg_clientes_bu
+    BEFORE UPDATE ON clientes
+    FOR EACH ROW
+BEGIN
+    DECLARE v_minimo INT;
+
+    SELECT CAST(valor AS UNSIGNED) INTO v_minimo
+      FROM configuracion
+     WHERE clave = 'PUNTAJE_MINIMO';
+
+    IF OLD.es_prospecto = FALSE AND NEW.puntaje >= IFNULL(v_minimo, 50) THEN
+        SET NEW.es_prospecto = TRUE,
+            NEW.estado_prospecto = 'NUEVO',
+            NEW.fecha_clasificacion = NOW();
+    END IF;
+END //
+DELIMITER ;
 -- =====================================================================
 -- PROCEDIMIENTOS ALMACENADOS (transacciones)
 -- =====================================================================
@@ -566,6 +601,8 @@ BEGIN
     UPDATE alertas SET leida = TRUE WHERE id_alerta = p_id_alerta;
 END$$
 
+
+DELIMITER //
 -- Ventas: crear una propuesta RFP para un prospecto asignado al asesor.
 CREATE PROCEDURE sp_crear_propuesta(
     IN p_id_cliente  INT,
@@ -772,3 +809,6 @@ CALL sp_crear_propuesta(6, 1, 15000000.00);
 CALL sp_registrar_venta(1, 4500000.00, 'ILIMITADA', 'ANUAL');
 CALL sp_registrar_venta(2, 8200000.00, 'PAGO_POR_USO', 'MENSUAL');
 CALL sp_registrar_venta(3, 12500000.00, 'ILIMITADA', 'ANUAL');
+
+
+SELECT * FROM
